@@ -16,7 +16,7 @@
         <ruoyi.version>3.8.9</ruoyi.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <spring-boot.version>2.5.15</spring-boot.version>
         <druid.version>1.2.23</druid.version>
@@ -30,6 +30,7 @@
         <poi.version>4.1.2</poi.version>
         <velocity.version>2.3</velocity.version>
         <jwt.version>0.9.1</jwt.version>
+        <lombok.version>1.18.30</lombok.version>
         <!-- override dependency version -->
         <tomcat.version>9.0.102</tomcat.version>
         <logback.version>1.2.13</logback.version>
@@ -182,6 +183,14 @@
                 <groupId>pro.fessional</groupId>
                 <artifactId>kaptcha</artifactId>
                 <version>${kaptcha.version}</version>
+            </dependency>
+
+            <!-- Lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- 定时任务-->
