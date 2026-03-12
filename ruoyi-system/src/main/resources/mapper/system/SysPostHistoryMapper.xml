@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysPostHistoryMapper">
+
+    <resultMap type="SysPostHistory" id="SysPostHistoryResult">
+        <id     property="historyId"     column="history_id"     />
+        <result property="postId"        column="post_id"        />
+        <result property="postCode"      column="post_code"      />
+        <result property="postName"      column="post_name"      />
+        <result property="postSort"      column="post_sort"      />
+        <result property="status"        column="status"         />
+        <result property="remark"        column="remark"         />
+        <result property="version"       column="version"        />
+        <result property="changeType"    column="change_type"    />
+        <result property="changeBy"      column="change_by"      />
+        <result property="changeTime"    column="change_time"    />
+    </resultMap>
+
+    <resultMap type="SysPostChangeDetail" id="SysPostChangeDetailResult">
+        <id     property="detailId"      column="detail_id"      />
+        <result property="historyId"     column="history_id"     />
+        <result property="postId"        column="post_id"        />
+        <result property="fieldName"     column="field_name"     />
+        <result property="fieldLabel"    column="field_label"    />
+        <result property="oldValue"      column="old_value"      />
+        <result property="newValue"      column="new_value"      />
+    </resultMap>
+
+    <sql id="selectPostHistoryVo">
+        select history_id, post_id, post_code, post_name, post_sort, status, remark, version, change_type, change_by, change_time
+        from sys_post_history
+    </sql>
+
+    <select id="selectPostHistoryList" parameterType="SysPostHistory" resultMap="SysPostHistoryResult">
+        <include refid="selectPostHistoryVo"/>
+        <where>
+            <if test="postId != null">
+                AND post_id = #{postId}
+            </if>
+            <if test="postCode != null and postCode != ''">
+                AND post_code like concat('%', #{postCode}, '%')
+            </if>
+            <if test="postName != null and postName != ''">
+                AND post_name like concat('%', #{postName}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="changeType != null and changeType != ''">
+                AND change_type = #{changeType}
+            </if>
+            <if test="changeBy != null and changeBy != ''">
+                AND change_by like concat('%', #{changeBy}, '%')
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND change_time &gt;= #{params.beginTime}
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND change_time &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by change_time desc
+    </select>
+
+    <select id="selectPostHistoryByPostId" parameterType="Long" resultMap="SysPostHistoryResult">
+        <include refid="selectPostHistoryVo"/>
+        where post_id = #{postId}
+        order by version desc, change_time desc
+    </select>
+
+    <select id="selectPostHistoryById" parameterType="Long" resultMap="SysPostHistoryResult">
+        <include refid="selectPostHistoryVo"/>
+        where history_id = #{historyId}
+    </select>
+
+    <select id="selectMaxVersionByPostId" parameterType="Long" resultType="Integer">
+        select max(version) from sys_post_history where post_id = #{postId}
+    </select>
+
+    <insert id="insertPostHistory" parameterType="SysPostHistory" useGeneratedKeys="true" keyProperty="historyId">
+        insert into sys_post_history(
+            <if test="postId != null">post_id,</if>
+            <if test="postCode != null and postCode != ''">post_code,</if>
+            <if test="postName != null and postName != ''">post_name,</if>
+            <if test="postSort != null">post_sort,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            <if test="version != null">version,</if>
+            <if test="changeType != null and changeType != ''">change_type,</if>
+            <if test="changeBy != null and changeBy != ''">change_by,</if>
+            change_time
+        )values(
+            <if test="postId != null">#{postId},</if>
+            <if test="postCode != null and postCode != ''">#{postCode},</if>
+            <if test="postName != null and postName != ''">#{postName},</if>
+            <if test="postSort != null">#{postSort},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            <if test="version != null">#{version},</if>
+            <if test="changeType != null and changeType != ''">#{changeType},</if>
+            <if test="changeBy != null and changeBy != ''">#{changeBy},</if>
+            sysdate()
+        )
+    </insert>
+
+    <insert id="batchInsertPostHistory">
+        insert into sys_post_history(post_id, post_code, post_name, post_sort, status, remark, version, change_type, change_by, change_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.postId}, #{item.postCode}, #{item.postName}, #{item.postSort}, #{item.status}, #{item.remark}, #{item.version}, #{item.changeType}, #{item.changeBy}, sysdate())
+        </foreach>
+    </insert>
+
+    <delete id="deletePostHistoryById" parameterType="Long">
+        delete from sys_post_history where history_id = #{historyId}
+    </delete>
+
+    <delete id="deletePostHistoryByPostId" parameterType="Long">
+        delete from sys_post_history where post_id = #{postId}
+    </delete>
+
+    <!-- 变更详情相关操作 -->
+    <insert id="insertChangeDetail" parameterType="SysPostChangeDetail" useGeneratedKeys="true" keyProperty="detailId">
+        insert into sys_post_change_detail(
+            <if test="historyId != null">history_id,</if>
+            <if test="postId != null">post_id,</if>
+            <if test="fieldName != null and fieldName != ''">field_name,</if>
+            <if test="fieldLabel != null and fieldLabel != ''">field_label,</if>
+            <if test="oldValue != null">old_value,</if>
+            <if test="newValue != null">new_value</if>
+        )values(
+            <if test="historyId != null">#{historyId},</if>
+            <if test="postId != null">#{postId},</if>
+            <if test="fieldName != null and fieldName != ''">#{fieldName},</if>
+            <if test="fieldLabel != null and fieldLabel != ''">#{fieldLabel},</if>
+            <if test="oldValue != null">#{oldValue},</if>
+            <if test="newValue != null">#{newValue}</if>
+        )
+    </insert>
+
+    <insert id="batchInsertChangeDetail">
+        insert into sys_post_change_detail(history_id, post_id, field_name, field_label, old_value, new_value)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.historyId}, #{item.postId}, #{item.fieldName}, #{item.fieldLabel}, #{item.oldValue}, #{item.newValue})
+        </foreach>
+    </insert>
+
+    <select id="selectChangeDetailByHistoryId" parameterType="Long" resultMap="SysPostChangeDetailResult">
+        select detail_id, history_id, post_id, field_name, field_label, old_value, new_value
+        from sys_post_change_detail
+        where history_id = #{historyId}
+    </select>
+
+    <select id="selectChangeDetailByPostId" parameterType="Long" resultMap="SysPostChangeDetailResult">
+        select d.detail_id, d.history_id, d.post_id, d.field_name, d.field_label, d.old_value, d.new_value
+        from sys_post_change_detail d
+        left join sys_post_history h on d.history_id = h.history_id
+        where d.post_id = #{postId}
+        order by h.change_time desc
+    </select>
+
+</mapper>

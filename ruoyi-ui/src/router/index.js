@@ -252,6 +252,20 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
+  },
+  {
+    path: '/system/post',
+    component: Layout,
+    hidden: true,
+    permissions: ['system:post:history:query'],
+    children: [
+      {
+        path: 'history',
+        component: () => import('@/views/system/post/history'),
+        name: 'PostHistory',
+        meta: { title: '变更历史', activeMenu: '/system/post' }
+      }
+    ]
   }
 ]
 

@@ -76,6 +76,16 @@
           v-hasPermi="['system:post:export']"
         >导出</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="el-icon-time"
+          size="mini"
+          @click="handleHistory"
+          v-hasPermi="['system:post:history:query']"
+        >变更历史</el-button>
+      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -303,6 +313,10 @@ export default {
       this.download('system/post/export', {
         ...this.queryParams
       }, `post_${new Date().getTime()}.xlsx`)
+    },
+    /** 变更历史按钮操作 */
+    handleHistory() {
+      this.$router.push('/system/post/history');
     }
   }
 };

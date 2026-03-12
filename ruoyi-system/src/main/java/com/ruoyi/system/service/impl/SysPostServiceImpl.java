@@ -3,6 +3,7 @@ package com.ruoyi.system.service.impl;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
@@ -10,6 +11,7 @@ import com.ruoyi.system.domain.SysPost;
 import com.ruoyi.system.mapper.SysPostMapper;
 import com.ruoyi.system.mapper.SysUserPostMapper;
 import com.ruoyi.system.service.ISysPostService;
+import com.ruoyi.system.service.ISysPostHistoryService;
 
 /**
  * 岗位信息 服务层处理
@@ -24,6 +26,9 @@ public class SysPostServiceImpl implements ISysPostService
 
     @Autowired
     private SysUserPostMapper userPostMapper;
+
+    @Autowired
+    private ISysPostHistoryService postHistoryService;
 
     /**
      * 查询岗位信息集合
@@ -139,6 +144,7 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deletePostByIds(Long[] postIds)
     {
         for (Long postId : postIds)
@@ -148,6 +154,8 @@ public class SysPostServiceImpl implements ISysPostService
             {
                 throw new ServiceException(String.format("%1$s已分配,不能删除", post.getPostName()));
             }
+            // 记录删除历史
+            postHistoryService.recordDeleteHistory(post, "system");
         }
         return postMapper.deletePostByIds(postIds);
     }
@@ -159,9 +167,13 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int insertPost(SysPost post)
     {
-        return postMapper.insertPost(post);
+        int result = postMapper.insertPost(post);
+        // 记录新增历史
+        postHistoryService.recordInsertHistory(post, post.getCreateBy());
+        return result;
     }
 
     /**
@@ -171,8 +183,14 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int updatePost(SysPost post)
     {
-        return postMapper.updatePost(post);
+        // 获取修改前的岗位信息
+        SysPost oldPost = postMapper.selectPostById(post.getPostId());
+        int result = postMapper.updatePost(post);
+        // 记录修改历史
+        postHistoryService.recordUpdateHistory(oldPost, post, post.getUpdateBy());
+        return result;
     }
 }
