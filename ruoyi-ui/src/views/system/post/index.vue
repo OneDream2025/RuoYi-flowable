@@ -107,6 +107,13 @@
           <el-button
             size="mini"
             type="text"
+            icon="el-icon-time"
+            @click="handleHistory(scope.row)"
+            v-hasPermi="['system:postHistory:list']"
+          >历史</el-button>
+          <el-button
+            size="mini"
+            type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:post:remove']"
@@ -303,6 +310,10 @@ export default {
       this.download('system/post/export', {
         ...this.queryParams
       }, `post_${new Date().getTime()}.xlsx`)
+    },
+    /** 查看变更历史 */
+    handleHistory(row) {
+      this.$router.push({ path: '/system/postHistory', query: { postId: row.postId } })
     }
   }
 };

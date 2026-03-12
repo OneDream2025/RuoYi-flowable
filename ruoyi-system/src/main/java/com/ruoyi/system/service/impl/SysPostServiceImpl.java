@@ -3,12 +3,14 @@ package com.ruoyi.system.service.impl;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.SysPost;
 import com.ruoyi.system.mapper.SysPostMapper;
 import com.ruoyi.system.mapper.SysUserPostMapper;
+import com.ruoyi.system.service.ISysPostHistoryService;
 import com.ruoyi.system.service.ISysPostService;
 
 /**
@@ -24,6 +26,9 @@ public class SysPostServiceImpl implements ISysPostService
 
     @Autowired
     private SysUserPostMapper userPostMapper;
+
+    @Autowired
+    private ISysPostHistoryService postHistoryService;
 
     /**
      * 查询岗位信息集合
@@ -159,9 +164,15 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int insertPost(SysPost post)
     {
-        return postMapper.insertPost(post);
+        int result = postMapper.insertPost(post);
+        if (result > 0)
+        {
+            postHistoryService.saveHistory(post, "1", null);
+        }
+        return result;
     }
 
     /**
@@ -171,8 +182,16 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int updatePost(SysPost post)
     {
-        return postMapper.updatePost(post);
+        SysPost beforePost = postMapper.selectPostById(post.getPostId());
+        int result = postMapper.updatePost(post);
+        if (result > 0)
+        {
+            SysPost afterPost = postMapper.selectPostById(post.getPostId());
+            postHistoryService.saveHistory(afterPost, "2", beforePost);
+        }
+        return result;
     }
 }
