@@ -89,6 +89,9 @@ public class SysUser extends BaseEntity
     /** 角色ID */
     private Long roleId;
 
+    /** 用户ID数组 */
+    private Long[] userIds;
+
     public SysUser()
     {
 
@@ -295,6 +298,16 @@ public class SysUser extends BaseEntity
     public void setRoleId(Long roleId)
     {
         this.roleId = roleId;
+    }
+
+    public Long[] getUserIds()
+    {
+        return userIds;
+    }
+
+    public void setUserIds(Long[] userIds)
+    {
+        this.userIds = userIds;
     }
 
     @Override
