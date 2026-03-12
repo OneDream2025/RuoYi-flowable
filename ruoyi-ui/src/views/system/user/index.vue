@@ -519,7 +519,8 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       this.download('system/user/export', {
-        ...this.queryParams
+        ...this.queryParams,
+        userIds: this.ids.join(',')
       }, `user_${new Date().getTime()}.xlsx`)
     },
     /** 导入按钮操作 */
