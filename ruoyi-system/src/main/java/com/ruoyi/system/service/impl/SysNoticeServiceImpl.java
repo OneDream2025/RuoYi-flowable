@@ -89,4 +89,26 @@ public class SysNoticeServiceImpl implements ISysNoticeService
     {
         return noticeMapper.deleteNoticeByIds(noticeIds);
     }
+
+    /**
+     * 查询需要发布的公告列表（达到发布时间且状态为关闭的公告）
+     * 
+     * @return 公告集合
+     */
+    @Override
+    public List<SysNotice> selectNoticesToPublish()
+    {
+        return noticeMapper.selectNoticesToPublish();
+    }
+
+    /**
+     * 查询需要过期的公告列表（达到结束时间且状态为正常的公告）
+     * 
+     * @return 公告集合
+     */
+    @Override
+    public List<SysNotice> selectNoticesToExpire()
+    {
+        return noticeMapper.selectNoticesToExpire();
+    }
 }

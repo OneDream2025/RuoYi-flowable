@@ -88,6 +88,23 @@
           <dict-tag :options="dict.type.sys_notice_status" :value="scope.row.status"/>
         </template>
       </el-table-column>
+      <el-table-column label="发布时间" align="center" prop="publishTime" width="160">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.publishTime, '{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" align="center" prop="endTime" width="160">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.endTime, '{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="定时状态" align="center" width="100">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status === '1' && scope.row.publishTime" type="info">待发布</el-tag>
+          <el-tag v-else-if="scope.row.status === '0' && scope.row.endTime" type="warning">发布中</el-tag>
+          <el-tag v-else type="success">已发布</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="创建者" align="center" prop="createBy" width="100" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="100">
         <template slot-scope="scope">
@@ -141,6 +158,30 @@
                   :value="dict.value"
                 ></el-option>
               </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="发布时间" prop="publishTime">
+              <el-date-picker
+                v-model="form.publishTime"
+                format="yyyy-MM-dd HH:mm:ss"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                type="datetime"
+                placeholder="请选择发布时间"
+                style="width: 100%"
+              ></el-date-picker>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="结束时间" prop="endTime">
+              <el-date-picker
+                v-model="form.endTime"
+                format="yyyy-MM-dd HH:mm:ss"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                type="datetime"
+                placeholder="请选择结束时间"
+                style="width: 100%"
+              ></el-date-picker>
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -205,6 +246,11 @@ export default {
       },
       // 表单参数
       form: {},
+      publishTimePickerOptions: {
+        disabledDate: (time) => {
+          return time.getTime() < Date.now() - 86400000
+        }
+      },
       // 表单校验
       rules: {
         noticeTitle: [
@@ -212,6 +258,19 @@ export default {
         ],
         noticeType: [
           { required: true, message: "公告类型不能为空", trigger: "change" }
+        ],
+        endTime: [
+          { validator: (rule, value, callback) => {
+              if (value && this.form.publishTime) {
+                if (new Date(value) <= new Date(this.form.publishTime)) {
+                  callback(new Error("结束时间必须晚于发布时间"));
+                } else {
+                  callback();
+                }
+              } else {
+                callback();
+              }
+            }, trigger: "change" }
         ]
       }
     };
@@ -309,4 +368,6 @@ export default {
     }
   }
 };
+
+
 </script>
