@@ -27,6 +27,16 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="公告状态" clearable>
+          <el-option
+            v-for="dict in dict.type.sys_notice_publish_status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -85,7 +95,17 @@
       </el-table-column>
       <el-table-column label="状态" align="center" prop="status" width="100">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.sys_notice_status" :value="scope.row.status"/>
+          <dict-tag :options="dict.type.sys_notice_publish_status" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="发布时间" align="center" prop="publishTime" width="160">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.publishTime, '{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" align="center" prop="endTime" width="160">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.endTime, '{y}-{m}-{d} {h}:{i}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="创建者" align="center" prop="createBy" width="100" />
@@ -94,7 +114,7 @@
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="200">
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -103,6 +123,22 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:notice:edit']"
           >修改</el-button>
+          <el-button
+            v-if="scope.row.status === '2'"
+            size="mini"
+            type="text"
+            icon="el-icon-video-play"
+            @click="handlePublish(scope.row)"
+            v-hasPermi="['system:notice:edit']"
+          >发布</el-button>
+          <el-button
+            v-if="scope.row.status === '0'"
+            size="mini"
+            type="text"
+            icon="el-icon-video-pause"
+            @click="handleRevoke(scope.row)"
+            v-hasPermi="['system:notice:edit']"
+          >撤回</el-button>
           <el-button
             size="mini"
             type="text"
@@ -143,15 +179,38 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="24">
-            <el-form-item label="状态">
-              <el-radio-group v-model="form.status">
-                <el-radio
-                  v-for="dict in dict.type.sys_notice_status"
+          <el-col :span="12">
+            <el-form-item label="状态" prop="status">
+              <el-select v-model="form.status" placeholder="请选择状态">
+                <el-option
+                  v-for="dict in dict.type.sys_notice_publish_status"
                   :key="dict.value"
-                  :label="dict.value"
-                >{{dict.label}}</el-radio>
-              </el-radio-group>
+                  :label="dict.label"
+                  :value="dict.value"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="发布时间" prop="publishTime">
+              <el-date-picker
+                v-model="form.publishTime"
+                type="datetime"
+                placeholder="选择发布时间"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                :picker-options="publishTimeOptions"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="结束时间" prop="endTime">
+              <el-date-picker
+                v-model="form.endTime"
+                type="datetime"
+                placeholder="选择结束时间"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                :picker-options="endTimeOptions"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -170,11 +229,11 @@
 </template>
 
 <script>
-import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice";
+import { listNotice, getNotice, delNotice, addNotice, updateNotice, publishNotice, revokeNotice } from "@/api/system/notice";
 
 export default {
   name: "Notice",
-  dicts: ['sys_notice_status', 'sys_notice_type'],
+  dicts: ['sys_notice_publish_status', 'sys_notice_type'],
   data() {
     return {
       // 遮罩层
@@ -201,6 +260,7 @@ export default {
         pageSize: 10,
         noticeTitle: undefined,
         createBy: undefined,
+        noticeType: undefined,
         status: undefined
       },
       // 表单参数
@@ -212,7 +272,41 @@ export default {
         ],
         noticeType: [
           { required: true, message: "公告类型不能为空", trigger: "change" }
+        ],
+        status: [
+          { required: true, message: "状态不能为空", trigger: "change" }
+        ],
+        endTime: [
+          { 
+            validator: (rule, value, callback) => {
+              if (value && this.form.publishTime) {
+                if (new Date(value) <= new Date(this.form.publishTime)) {
+                  callback(new Error('结束时间必须晚于发布时间'));
+                } else {
+                  callback();
+                }
+              } else {
+                callback();
+              }
+            }, 
+            trigger: "change" 
+          }
         ]
+      },
+      // 发布时间选择器配置
+      publishTimeOptions: {
+        disabledDate: (time) => {
+          return time.getTime() < Date.now() - 8.64e7;
+        }
+      },
+      // 结束时间选择器配置
+      endTimeOptions: {
+        disabledDate: (time) => {
+          if (this.form.publishTime) {
+            return time.getTime() < new Date(this.form.publishTime).getTime();
+          }
+          return time.getTime() < Date.now() - 8.64e7;
+        }
       }
     };
   },
@@ -241,7 +335,9 @@ export default {
         noticeTitle: undefined,
         noticeType: undefined,
         noticeContent: undefined,
-        status: "0"
+        status: "0",
+        publishTime: undefined,
+        endTime: undefined
       };
       this.resetForm("form");
     },
@@ -305,6 +401,24 @@ export default {
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
+    },
+    /** 立即发布操作 */
+    handlePublish(row) {
+      this.$modal.confirm('确认要立即发布该公告吗？').then(function() {
+        return publishNotice(row.noticeId);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("发布成功");
+      }).catch(() => {});
+    },
+    /** 撤回操作 */
+    handleRevoke(row) {
+      this.$modal.confirm('确认要撤回该公告吗？').then(function() {
+        return revokeNotice(row.noticeId);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("撤回成功");
       }).catch(() => {});
     }
   }

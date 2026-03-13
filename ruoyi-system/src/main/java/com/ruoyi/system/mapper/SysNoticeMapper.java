@@ -57,4 +57,18 @@ public interface SysNoticeMapper
      * @return 结果
      */
     public int deleteNoticeByIds(Long[] noticeIds);
+
+    /**
+     * 查询待发布的公告列表
+     * 
+     * @return 待发布公告集合
+     */
+    public List<SysNotice> selectNoticesToPublish();
+
+    /**
+     * 查询待过期的公告列表
+     * 
+     * @return 待过期公告集合
+     */
+    public List<SysNotice> selectNoticesToExpire();
 }

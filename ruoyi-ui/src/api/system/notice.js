@@ -42,3 +42,19 @@ export function delNotice(noticeId) {
     method: 'delete'
   })
 }
+
+// 立即发布公告
+export function publishNotice(noticeId) {
+  return request({
+    url: '/system/notice/publish/' + noticeId,
+    method: 'put'
+  })
+}
+
+// 撤回公告
+export function revokeNotice(noticeId) {
+  return request({
+    url: '/system/notice/revoke/' + noticeId,
+    method: 'put'
+  })
+}

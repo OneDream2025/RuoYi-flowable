@@ -1,6 +1,8 @@
 package com.ruoyi.system.service.impl;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.domain.SysNotice;
@@ -15,6 +17,8 @@ import com.ruoyi.system.service.ISysNoticeService;
 @Service
 public class SysNoticeServiceImpl implements ISysNoticeService
 {
+    private static final Logger log = LoggerFactory.getLogger(SysNoticeServiceImpl.class);
+
     @Autowired
     private SysNoticeMapper noticeMapper;
 
@@ -88,5 +92,47 @@ public class SysNoticeServiceImpl implements ISysNoticeService
     public int deleteNoticeByIds(Long[] noticeIds)
     {
         return noticeMapper.deleteNoticeByIds(noticeIds);
+    }
+
+    /**
+     * 处理待发布的公告
+     * 将发布时间已到且状态为"待发布"的公告状态改为"正常"
+     * 
+     * @return 处理的公告数量
+     */
+    @Override
+    public int processPendingNotices()
+    {
+        List<SysNotice> noticesToPublish = noticeMapper.selectNoticesToPublish();
+        int count = 0;
+        for (SysNotice notice : noticesToPublish)
+        {
+            notice.setStatus("0");
+            noticeMapper.updateNotice(notice);
+            count++;
+            log.info("公告【{}】已自动发布", notice.getNoticeTitle());
+        }
+        return count;
+    }
+
+    /**
+     * 处理已过期的公告
+     * 将结束时间已过且状态为"正常"的公告状态改为"已过期"
+     * 
+     * @return 处理的公告数量
+     */
+    @Override
+    public int processExpiredNotices()
+    {
+        List<SysNotice> noticesToExpire = noticeMapper.selectNoticesToExpire();
+        int count = 0;
+        for (SysNotice notice : noticesToExpire)
+        {
+            notice.setStatus("3");
+            noticeMapper.updateNotice(notice);
+            count++;
+            log.info("公告【{}】已自动过期", notice.getNoticeTitle());
+        }
+        return count;
     }
 }

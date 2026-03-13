@@ -1,9 +1,11 @@
 package com.ruoyi.system.domain;
 
+import java.util.Date;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.xss.Xss;
 
@@ -28,8 +30,16 @@ public class SysNotice extends BaseEntity
     /** 公告内容 */
     private String noticeContent;
 
-    /** 公告状态（0正常 1关闭） */
+    /** 公告状态（0正常 1关闭 2待发布 3已过期） */
     private String status;
+
+    /** 发布时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date publishTime;
+
+    /** 结束时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date endTime;
 
     public Long getNoticeId()
     {
@@ -84,6 +94,26 @@ public class SysNotice extends BaseEntity
         return status;
     }
 
+    public Date getPublishTime()
+    {
+        return publishTime;
+    }
+
+    public void setPublishTime(Date publishTime)
+    {
+        this.publishTime = publishTime;
+    }
+
+    public Date getEndTime()
+    {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime)
+    {
+        this.endTime = endTime;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -92,6 +122,8 @@ public class SysNotice extends BaseEntity
             .append("noticeType", getNoticeType())
             .append("noticeContent", getNoticeContent())
             .append("status", getStatus())
+            .append("publishTime", getPublishTime())
+            .append("endTime", getEndTime())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

@@ -88,4 +88,40 @@ public class SysNoticeController extends BaseController
     {
         return toAjax(noticeService.deleteNoticeByIds(noticeIds));
     }
+
+    /**
+     * 立即发布公告
+     */
+    @PreAuthorize("@ss.hasPermi('system:notice:edit')")
+    @Log(title = "通知公告", businessType = BusinessType.UPDATE)
+    @PutMapping("/publish/{noticeId}")
+    public AjaxResult publish(@PathVariable Long noticeId)
+    {
+        SysNotice notice = noticeService.selectNoticeById(noticeId);
+        if (notice == null)
+        {
+            return error("公告不存在");
+        }
+        notice.setStatus("0");
+        notice.setUpdateBy(getUsername());
+        return toAjax(noticeService.updateNotice(notice));
+    }
+
+    /**
+     * 撤回公告
+     */
+    @PreAuthorize("@ss.hasPermi('system:notice:edit')")
+    @Log(title = "通知公告", businessType = BusinessType.UPDATE)
+    @PutMapping("/revoke/{noticeId}")
+    public AjaxResult revoke(@PathVariable Long noticeId)
+    {
+        SysNotice notice = noticeService.selectNoticeById(noticeId);
+        if (notice == null)
+        {
+            return error("公告不存在");
+        }
+        notice.setStatus("1");
+        notice.setUpdateBy(getUsername());
+        return toAjax(noticeService.updateNotice(notice));
+    }
 }

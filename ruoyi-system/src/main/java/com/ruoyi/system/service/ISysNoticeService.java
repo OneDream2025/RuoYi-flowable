@@ -57,4 +57,18 @@ public interface ISysNoticeService
      * @return 结果
      */
     public int deleteNoticeByIds(Long[] noticeIds);
+
+    /**
+     * 处理待发布的公告
+     * 
+     * @return 处理的公告数量
+     */
+    public int processPendingNotices();
+
+    /**
+     * 处理已过期的公告
+     * 
+     * @return 处理的公告数量
+     */
+    public int processExpiredNotices();
 }
