@@ -1,5 +1,6 @@
 package com.ruoyi.system.service;
 
+import java.util.List;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.system.domain.SysUserOnline;
 
@@ -45,4 +46,13 @@ public interface ISysUserOnlineService
      * @return 在线用户
      */
     public SysUserOnline loginUserToUserOnline(LoginUser user);
+
+    /**
+     * 判断用户是否匹配筛选条件
+     * 
+     * @param user 登录用户
+     * @param query 查询条件
+     * @return 是否匹配
+     */
+    public boolean matchesFilter(LoginUser user, SysUserOnline query);
 }
