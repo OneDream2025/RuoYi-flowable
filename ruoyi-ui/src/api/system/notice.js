@@ -42,3 +42,36 @@ export function delNotice(noticeId) {
     method: 'delete'
   })
 }
+
+// 发布公告（立即发布或定时发布）
+export function publishNotice(data) {
+  return request({
+    url: '/system/notice/publish',
+    method: 'put',
+    data: data
+  })
+}
+
+// 取消发布公告
+export function cancelPublishNotice(noticeId) {
+  return request({
+    url: '/system/notice/cancel/' + noticeId,
+    method: 'put'
+  })
+}
+
+// 查询待发布公告列表
+export function listWaitPublishNotices() {
+  return request({
+    url: '/system/notice/waitPublish',
+    method: 'get'
+  })
+}
+
+// 查询已过期公告列表
+export function listExpiredNotices() {
+  return request({
+    url: '/system/notice/expired',
+    method: 'get'
+  })
+}

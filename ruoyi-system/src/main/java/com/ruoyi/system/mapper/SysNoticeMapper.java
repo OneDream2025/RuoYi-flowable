@@ -1,6 +1,7 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 import com.ruoyi.system.domain.SysNotice;
 
 /**
@@ -57,4 +58,30 @@ public interface SysNoticeMapper
      * @return 结果
      */
     public int deleteNoticeByIds(Long[] noticeIds);
+
+    /**
+     * 批量更新公告发布状态
+     * 
+     * @param noticeIds 公告ID数组
+     * @param publishStatus 发布状态
+     * @param status 公告状态
+     * @return 结果
+     */
+    public int updateNoticePublishStatus(@Param("noticeIds") Long[] noticeIds, 
+                                         @Param("publishStatus") String publishStatus, 
+                                         @Param("status") String status);
+
+    /**
+     * 查询待发布的公告（发布时间已到但未发布）
+     * 
+     * @return 公告集合
+     */
+    public List<SysNotice> selectWaitPublishNotices();
+
+    /**
+     * 查询已过期的公告（结束时间已到但状态未更新）
+     * 
+     * @return 公告集合
+     */
+    public List<SysNotice> selectExpiredNotices();
 }

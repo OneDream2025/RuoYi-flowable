@@ -55,7 +55,7 @@ public class SysNoticeController extends BaseController
     }
 
     /**
-     * 新增通知公告
+     * 新增通知公告（保存为草稿）
      */
     @PreAuthorize("@ss.hasPermi('system:notice:add')")
     @Log(title = "通知公告", businessType = BusinessType.INSERT)
@@ -63,6 +63,11 @@ public class SysNoticeController extends BaseController
     public AjaxResult add(@Validated @RequestBody SysNotice notice)
     {
         notice.setCreateBy(getUsername());
+        // 默认为草稿状态
+        if (notice.getPublishStatus() == null)
+        {
+            notice.setPublishStatus("0");
+        }
         return toAjax(noticeService.insertNotice(notice));
     }
 
@@ -87,5 +92,50 @@ public class SysNoticeController extends BaseController
     public AjaxResult remove(@PathVariable Long[] noticeIds)
     {
         return toAjax(noticeService.deleteNoticeByIds(noticeIds));
+    }
+
+    /**
+     * 发布通知公告（立即发布或定时发布）
+     */
+    @PreAuthorize("@ss.hasPermi('system:notice:edit')")
+    @Log(title = "通知公告", businessType = BusinessType.UPDATE)
+    @PutMapping("/publish")
+    public AjaxResult publish(@RequestBody SysNotice notice)
+    {
+        notice.setUpdateBy(getUsername());
+        return toAjax(noticeService.publishNotice(notice));
+    }
+
+    /**
+     * 取消发布通知公告（将已发布或待发布公告变为草稿）
+     */
+    @PreAuthorize("@ss.hasPermi('system:notice:edit')")
+    @Log(title = "通知公告", businessType = BusinessType.UPDATE)
+    @PutMapping("/cancel/{noticeId}")
+    public AjaxResult cancel(@PathVariable Long noticeId)
+    {
+        return toAjax(noticeService.cancelPublish(noticeId));
+    }
+
+    /**
+     * 获取待发布的公告列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:notice:list')")
+    @GetMapping("/waitPublish")
+    public AjaxResult waitPublish()
+    {
+        List<SysNotice> list = noticeService.selectWaitPublishNotices();
+        return success(list);
+    }
+
+    /**
+     * 获取已过期的公告列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:notice:list')")
+    @GetMapping("/expired")
+    public AjaxResult expired()
+    {
+        List<SysNotice> list = noticeService.selectExpiredNotices();
+        return success(list);
     }
 }
