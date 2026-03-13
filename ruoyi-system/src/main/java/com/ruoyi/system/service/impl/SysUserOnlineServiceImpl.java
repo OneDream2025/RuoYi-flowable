@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.utils.StringUtils;
@@ -66,6 +67,36 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
         return null;
     }
 
+    @Override
+    public boolean matches(SysUserOnline online, String ipaddr, String userName, Long deptId, Long roleId, Long loginTimeBegin, Long loginTimeEnd)
+    {
+        if (StringUtils.isNotEmpty(ipaddr) && !StringUtils.contains(online.getIpaddr(), ipaddr))
+        {
+            return false;
+        }
+        if (StringUtils.isNotEmpty(userName) && !StringUtils.contains(online.getUserName(), userName))
+        {
+            return false;
+        }
+        if (StringUtils.isNotNull(deptId) && !Objects.equals(deptId, online.getDeptId()))
+        {
+            return false;
+        }
+        if (StringUtils.isNotNull(roleId) && !Objects.equals(roleId, online.getRoleId()))
+        {
+            return false;
+        }
+        if (StringUtils.isNotNull(loginTimeBegin) && online.getLoginTime() < loginTimeBegin)
+        {
+            return false;
+        }
+        if (StringUtils.isNotNull(loginTimeEnd) && online.getLoginTime() > loginTimeEnd)
+        {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * 设置在线用户信息
      * 
@@ -87,9 +118,15 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService
         sysUserOnline.setBrowser(user.getBrowser());
         sysUserOnline.setOs(user.getOs());
         sysUserOnline.setLoginTime(user.getLoginTime());
+        sysUserOnline.setExpireTime(user.getExpireTime());
+        sysUserOnline.setDeptId(user.getDeptId());
         if (StringUtils.isNotNull(user.getUser().getDept()))
         {
             sysUserOnline.setDeptName(user.getUser().getDept().getDeptName());
+        }
+        if (StringUtils.isNotEmpty(user.getUser().getRoles()))
+        {
+            sysUserOnline.setRoleId(user.getUser().getRoles().get(0).getRoleId());
         }
         return sysUserOnline;
     }

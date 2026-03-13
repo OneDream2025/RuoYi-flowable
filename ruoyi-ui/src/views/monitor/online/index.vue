@@ -17,6 +17,44 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="部门" prop="deptId">
+        <treeselect
+          v-model="queryParams.deptId"
+          :options="deptOptions"
+          placeholder="请选择部门"
+          :show-count="true"
+          clearable
+          style="width: 200px"
+        />
+      </el-form-item>
+      <el-form-item label="角色" prop="roleId">
+        <el-select
+          v-model="queryParams.roleId"
+          placeholder="请选择角色"
+          clearable
+          style="width: 200px"
+        >
+          <el-option
+            v-for="item in roleOptions"
+            :key="item.roleId"
+            :label="item.roleName"
+            :value="item.roleId"
+            :disabled="item.status == 1"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="登录时间">
+        <el-date-picker
+          v-model="dateRange"
+          style="width: 240px"
+          value-format="timestamp"
+          type="daterange"
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          :default-time="['00:00:00', '23:59:59']"
+        ></el-date-picker>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -24,9 +62,12 @@
 
     </el-form>
     <el-table
+      ref="tables"
       v-loading="loading"
       :data="list.slice((pageNum-1)*pageSize,pageNum*pageSize)"
       style="width: 100%;"
+      :default-sort="defaultSort"
+      @sort-change="handleSortChange"
     >
       <el-table-column label="序号" type="index" align="center">
         <template slot-scope="scope">
@@ -34,13 +75,13 @@
         </template>
       </el-table-column>
       <el-table-column label="会话编号" align="center" prop="tokenId" :show-overflow-tooltip="true" />
-      <el-table-column label="登录名称" align="center" prop="userName" :show-overflow-tooltip="true" />
+      <el-table-column label="登录名称" align="center" prop="userName" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />
       <el-table-column label="部门名称" align="center" prop="deptName" />
-      <el-table-column label="主机" align="center" prop="ipaddr" :show-overflow-tooltip="true" />
+      <el-table-column label="主机" align="center" prop="ipaddr" :show-overflow-tooltip="true" sortable="custom" :sort-orders="['descending', 'ascending']" />
       <el-table-column label="登录地点" align="center" prop="loginLocation" :show-overflow-tooltip="true" />
       <el-table-column label="浏览器" align="center" prop="browser" />
       <el-table-column label="操作系统" align="center" prop="os" />
-      <el-table-column label="登录时间" align="center" prop="loginTime" width="180">
+      <el-table-column label="登录时间" align="center" prop="loginTime" sortable="custom" :sort-orders="['descending', 'ascending']" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.loginTime) }}</span>
         </template>
@@ -64,50 +105,73 @@
 
 <script>
 import { list, forceLogout } from "@/api/monitor/online";
+import { treeselect } from "@/api/system/dept";
+import { listRole } from "@/api/system/role";
 
 export default {
   name: "Online",
   data() {
     return {
-      // 遮罩层
       loading: true,
-      // 总条数
       total: 0,
-      // 表格数据
       list: [],
       pageNum: 1,
       pageSize: 10,
-      // 查询参数
+      dateRange: [],
+      deptOptions: [],
+      roleOptions: [],
+      defaultSort: { prop: "loginTime", order: "descending" },
       queryParams: {
         ipaddr: undefined,
-        userName: undefined
+        userName: undefined,
+        deptId: undefined,
+        roleId: undefined,
+        orderByColumn: undefined,
+        isAsc: undefined
       }
     };
   },
   created() {
+    this.getDeptTreeSelect();
+    this.getRoleList();
     this.getList();
   },
   methods: {
-    /** 查询登录日志列表 */
+    getDeptTreeSelect() {
+      treeselect().then(response => {
+        this.deptOptions = response.data;
+      });
+    },
+    getRoleList() {
+      listRole({}).then(response => {
+        this.roleOptions = response.rows;
+      });
+    },
     getList() {
       this.loading = true;
-      list(this.queryParams).then(response => {
+      list(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
         this.list = response.rows;
         this.total = response.total;
         this.loading = false;
       });
     },
-    /** 搜索按钮操作 */
     handleQuery() {
       this.pageNum = 1;
       this.getList();
     },
-    /** 重置按钮操作 */
     resetQuery() {
+      this.dateRange = [];
       this.resetForm("queryForm");
+      this.queryParams.orderByColumn = undefined;
+      this.queryParams.isAsc = undefined;
+      this.$refs.tables.sort(this.defaultSort.prop, this.defaultSort.order);
       this.handleQuery();
     },
-    /** 强退按钮操作 */
+    handleSortChange(column) {
+      this.queryParams.orderByColumn = column.prop;
+      this.queryParams.isAsc = column.order;
+      this.getList();
+    },
     handleForceLogout(row) {
       this.$modal.confirm('是否确认强退名称为"' + row.userName + '"的用户？').then(function() {
         return forceLogout(row.tokenId);
@@ -119,4 +183,3 @@ export default {
   }
 };
 </script>
-
