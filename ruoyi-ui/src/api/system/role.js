@@ -117,3 +117,20 @@ export function deptTreeSelect(roleId) {
     method: 'get'
   })
 }
+
+// 复制角色权限
+export function copyRolePermission(data) {
+  return request({
+    url: '/system/role/copyPermission',
+    method: 'post',
+    data: data
+  })
+}
+
+// 查询角色下拉选择列表
+export function optionselect() {
+  return request({
+    url: '/system/role/optionselect',
+    method: 'get'
+  })
+}

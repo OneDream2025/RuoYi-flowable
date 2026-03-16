@@ -424,4 +424,71 @@ public class SysRoleServiceImpl implements ISysRoleService
         }
         return userRoleMapper.batchUserRole(list);
     }
+
+    /**
+     * 复制角色权限
+     * 
+     * @param sourceRoleId 源角色ID
+     * @param targetRoleId 目标角色ID
+     * @return 结果
+     */
+    @Override
+    @Transactional
+    public int copyRolePermission(Long sourceRoleId, Long targetRoleId)
+    {
+        // 校验源角色和目标角色是否有数据权限
+        checkRoleDataScope(sourceRoleId, targetRoleId);
+        
+        // 删除目标角色现有的菜单权限
+        roleMenuMapper.deleteRoleMenuByRoleId(targetRoleId);
+        
+        // 查询源角色的菜单权限
+        List<Long> menuIds = roleMenuMapper.selectMenuIdsByRoleId(sourceRoleId);
+        
+        // 复制菜单权限到目标角色
+        if (StringUtils.isNotEmpty(menuIds))
+        {
+            List<SysRoleMenu> list = new ArrayList<SysRoleMenu>();
+            for (Long menuId : menuIds)
+            {
+                SysRoleMenu rm = new SysRoleMenu();
+                rm.setRoleId(targetRoleId);
+                rm.setMenuId(menuId);
+                list.add(rm);
+            }
+            roleMenuMapper.batchRoleMenu(list);
+        }
+        
+        // 删除目标角色现有的部门权限
+        roleDeptMapper.deleteRoleDeptByRoleId(targetRoleId);
+        
+        // 查询源角色的部门权限
+        List<Long> deptIds = roleDeptMapper.selectDeptIdsByRoleId(sourceRoleId);
+        
+        // 复制部门权限到目标角色
+        if (StringUtils.isNotEmpty(deptIds))
+        {
+            List<SysRoleDept> list = new ArrayList<SysRoleDept>();
+            for (Long deptId : deptIds)
+            {
+                SysRoleDept rd = new SysRoleDept();
+                rd.setRoleId(targetRoleId);
+                rd.setDeptId(deptId);
+                list.add(rd);
+            }
+            roleDeptMapper.batchRoleDept(list);
+        }
+        
+        // 复制数据范围
+        SysRole sourceRole = roleMapper.selectRoleById(sourceRoleId);
+        if (StringUtils.isNotNull(sourceRole))
+        {
+            SysRole targetRole = new SysRole();
+            targetRole.setRoleId(targetRoleId);
+            targetRole.setDataScope(sourceRole.getDataScope());
+            roleMapper.updateRole(targetRole);
+        }
+        
+        return 1;
+    }
 }

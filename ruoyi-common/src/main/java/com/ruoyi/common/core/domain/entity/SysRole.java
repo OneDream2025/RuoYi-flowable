@@ -64,6 +64,9 @@ public class SysRole extends BaseEntity
     /** 角色菜单权限 */
     private Set<String> permissions;
 
+    /** 源角色ID（用于权限复制） */
+    private Long sourceRoleId;
+
     public SysRole()
     {
 
@@ -217,6 +220,16 @@ public class SysRole extends BaseEntity
     public void setPermissions(Set<String> permissions)
     {
         this.permissions = permissions;
+    }
+
+    public Long getSourceRoleId()
+    {
+        return sourceRoleId;
+    }
+
+    public void setSourceRoleId(Long sourceRoleId)
+    {
+        this.sourceRoleId = sourceRoleId;
     }
 
     @Override

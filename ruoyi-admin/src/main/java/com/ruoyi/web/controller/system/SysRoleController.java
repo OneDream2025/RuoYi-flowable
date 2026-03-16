@@ -259,4 +259,23 @@ public class SysRoleController extends BaseController
         ajax.put("depts", deptService.selectDeptTreeList(new SysDept()));
         return ajax;
     }
+
+    /**
+     * 复制角色权限
+     */
+    @PreAuthorize("@ss.hasPermi('system:role:edit')")
+    @Log(title = "角色管理", businessType = BusinessType.UPDATE)
+    @PostMapping("/copyPermission")
+    public AjaxResult copyPermission(@RequestBody SysRole role)
+    {
+        roleService.checkRoleAllowed(role);
+        roleService.checkRoleDataScope(role.getRoleId());
+        if (StringUtils.isNull(role.getRoleId()) || StringUtils.isNull(role.getSourceRoleId()))
+        {
+            return error("源角色和目标角色不能为空");
+        }
+        role.setUpdateBy(getUsername());
+        roleService.copyRolePermission(role.getSourceRoleId(), role.getRoleId());
+        return success();
+    }
 }
