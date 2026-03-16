@@ -259,4 +259,15 @@ public class SysRoleController extends BaseController
         ajax.put("depts", deptService.selectDeptTreeList(new SysDept()));
         return ajax;
     }
+
+    /**
+     * 复制角色权限
+     */
+    @PreAuthorize("@ss.hasPermi('system:role:edit')")
+    @Log(title = "角色管理", businessType = BusinessType.GRANT)
+    @PutMapping("/copyPermission/{fromRoleId}/{toRoleId}")
+    public AjaxResult copyPermission(@PathVariable Long fromRoleId, @PathVariable Long toRoleId)
+    {
+        return toAjax(roleService.copyRolePermission(fromRoleId, toRoleId));
+    }
 }

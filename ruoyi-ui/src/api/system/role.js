@@ -117,3 +117,11 @@ export function deptTreeSelect(roleId) {
     method: 'get'
   })
 }
+
+// 复制角色权限
+export function copyPermission(fromRoleId, toRoleId) {
+  return request({
+    url: '/system/role/copyPermission/' + fromRoleId + '/' + toRoleId,
+    method: 'put'
+  })
+}
