@@ -64,6 +64,15 @@ public class SysRole extends BaseEntity
     /** 角色菜单权限 */
     private Set<String> permissions;
 
+    /** 目标角色ID（用于权限复制） */
+    private Long targetRoleId;
+
+    /** 是否复制菜单权限 */
+    private boolean copyMenuPermission = true;
+
+    /** 是否复制数据权限 */
+    private boolean copyDataScope = true;
+
     public SysRole()
     {
 
@@ -217,6 +226,36 @@ public class SysRole extends BaseEntity
     public void setPermissions(Set<String> permissions)
     {
         this.permissions = permissions;
+    }
+
+    public Long getTargetRoleId()
+    {
+        return targetRoleId;
+    }
+
+    public void setTargetRoleId(Long targetRoleId)
+    {
+        this.targetRoleId = targetRoleId;
+    }
+
+    public boolean isCopyMenuPermission()
+    {
+        return copyMenuPermission;
+    }
+
+    public void setCopyMenuPermission(boolean copyMenuPermission)
+    {
+        this.copyMenuPermission = copyMenuPermission;
+    }
+
+    public boolean isCopyDataScope()
+    {
+        return copyDataScope;
+    }
+
+    public void setCopyDataScope(boolean copyDataScope)
+    {
+        this.copyDataScope = copyDataScope;
     }
 
     @Override

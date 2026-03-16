@@ -41,4 +41,12 @@ public interface SysRoleDeptMapper
      * @return 结果
      */
     public int batchRoleDept(List<SysRoleDept> roleDeptList);
+
+    /**
+     * 根据角色ID查询部门ID列表
+     * 
+     * @param roleId 角色ID
+     * @return 部门ID列表
+     */
+    public List<Long> selectDeptIdsByRoleId(Long roleId);
 }

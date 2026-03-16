@@ -141,6 +141,8 @@
                 v-hasPermi="['system:role:edit']">数据权限</el-dropdown-item>
               <el-dropdown-item command="handleAuthUser" icon="el-icon-user"
                 v-hasPermi="['system:role:edit']">分配用户</el-dropdown-item>
+              <el-dropdown-item command="handleCopyPermission" icon="el-icon-document-copy"
+                v-hasPermi="['system:role:edit']">复制权限</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </template>
@@ -248,11 +250,47 @@
         <el-button @click="cancelDataScope">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 复制权限对话框 -->
+    <el-dialog :title="title" :visible.sync="openCopyPermission" width="500px" append-to-body>
+      <el-form ref="copyForm" :model="copyForm" :rules="copyRules" label-width="120px">
+        <el-form-item label="当前角色">
+          <el-input v-model="copyForm.roleName" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="源角色" prop="sourceRoleId">
+          <el-select v-model="copyForm.sourceRoleId" placeholder="请选择要复制权限的角色" style="width: 100%">
+            <el-option
+              v-for="item in roleOptions"
+              :key="item.roleId"
+              :label="item.roleName"
+              :value="item.roleId"
+              :disabled="item.roleId === copyForm.roleId"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="复制内容">
+          <el-checkbox v-model="copyForm.copyMenuPermission">菜单权限</el-checkbox>
+          <el-checkbox v-model="copyForm.copyDataScope">数据权限</el-checkbox>
+        </el-form-item>
+        <el-form-item label="覆盖确认">
+          <el-alert
+            title="注意：复制权限将覆盖当前角色的现有权限，此操作不可恢复！"
+            type="warning"
+            :closable="false"
+            show-icon>
+          </el-alert>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitCopyPermission">确 定</el-button>
+        <el-button @click="cancelCopyPermission">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { listRole, getRole, delRole, addRole, updateRole, dataScope, changeRoleStatus, deptTreeSelect } from "@/api/system/role";
+import { listRole, getRole, delRole, addRole, updateRole, dataScope, changeRoleStatus, deptTreeSelect, copyPermission, optionselect } from "@/api/system/role";
 import { treeselect as menuTreeselect, roleMenuTreeselect } from "@/api/system/menu";
 
 export default {
@@ -337,6 +375,18 @@ export default {
         ],
         roleSort: [
           { required: true, message: "角色顺序不能为空", trigger: "blur" }
+        ]
+      },
+      // 是否显示复制权限对话框
+      openCopyPermission: false,
+      // 角色选项列表
+      roleOptions: [],
+      // 复制权限表单
+      copyForm: {},
+      // 复制权限表单校验
+      copyRules: {
+        sourceRoleId: [
+          { required: true, message: "请选择源角色", trigger: "change" }
         ]
       }
     };
@@ -462,6 +512,9 @@ export default {
           break;
         case "handleAuthUser":
           this.handleAuthUser(row);
+          break;
+        case "handleCopyPermission":
+          this.handleCopyPermission(row);
           break;
         default:
           break;
@@ -599,6 +652,50 @@ export default {
       this.download('system/role/export', {
         ...this.queryParams
       }, `role_${new Date().getTime()}.xlsx`)
+    },
+    /** 复制权限操作 */
+    handleCopyPermission(row) {
+      this.copyForm = {
+        roleId: row.roleId,
+        roleName: row.roleName,
+        sourceRoleId: undefined,
+        copyMenuPermission: true,
+        copyDataScope: true
+      };
+      this.getRoleOptions();
+      this.openCopyPermission = true;
+      this.title = "复制权限";
+    },
+    /** 获取角色选项列表 */
+    getRoleOptions() {
+      optionselect().then(response => {
+        this.roleOptions = response.data;
+      });
+    },
+    /** 取消复制权限 */
+    cancelCopyPermission() {
+      this.openCopyPermission = false;
+      this.copyForm = {};
+    },
+    /** 提交复制权限 */
+    submitCopyPermission() {
+      this.$refs["copyForm"].validate(valid => {
+        if (valid) {
+          this.$modal.confirm('确认要从所选角色复制权限到当前角色吗？此操作将覆盖现有权限！').then(() => {
+            const data = {
+              roleId: this.copyForm.sourceRoleId,
+              targetRoleId: this.copyForm.roleId,
+              copyMenuPermission: this.copyForm.copyMenuPermission,
+              copyDataScope: this.copyForm.copyDataScope
+            };
+            copyPermission(data).then(response => {
+              this.$modal.msgSuccess("复制权限成功");
+              this.openCopyPermission = false;
+              this.getList();
+            });
+          }).catch(() => {});
+        }
+      });
     }
   }
 };

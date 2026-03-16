@@ -125,3 +125,12 @@ export function optionselect() {
     method: 'get'
   })
 }
+
+// 复制角色权限
+export function copyPermission(data) {
+  return request({
+    url: '/system/role/copyPermission',
+    method: 'post',
+    data: data
+  })
+}
