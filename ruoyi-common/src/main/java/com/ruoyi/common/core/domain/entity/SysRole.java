@@ -67,6 +67,9 @@ public class SysRole extends BaseEntity
     /** 源角色ID（用于权限复制） */
     private Long sourceRoleId;
 
+    /** 角色ID数组（用于导出选中数据） */
+    private Long[] roleIds;
+
     public SysRole()
     {
 
@@ -230,6 +233,16 @@ public class SysRole extends BaseEntity
     public void setSourceRoleId(Long sourceRoleId)
     {
         this.sourceRoleId = sourceRoleId;
+    }
+
+    public Long[] getRoleIds()
+    {
+        return roleIds;
+    }
+
+    public void setRoleIds(Long[] roleIds)
+    {
+        this.roleIds = roleIds;
     }
 
     @Override
