@@ -73,6 +73,9 @@ public class SysRole extends BaseEntity
     /** 是否复制数据权限 */
     private boolean copyDataScope = true;
 
+    /** 角色ID列表（用于导出选中数据） */
+    private String roleIds;
+
     public SysRole()
     {
 
@@ -256,6 +259,16 @@ public class SysRole extends BaseEntity
     public void setCopyDataScope(boolean copyDataScope)
     {
         this.copyDataScope = copyDataScope;
+    }
+
+    public String getRoleIds()
+    {
+        return roleIds;
+    }
+
+    public void setRoleIds(String roleIds)
+    {
+        this.roleIds = roleIds;
     }
 
     @Override

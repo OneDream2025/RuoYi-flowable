@@ -33,6 +33,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectRoleList" parameterType="SysRole" resultMap="SysRoleResult">
 		<include refid="selectRoleVo"/>
 		where r.del_flag = '0'
+		<if test="roleIds != null and roleIds != ''">
+			AND r.role_id in
+			<foreach collection="roleIds.split(',')" item="roleId" open="(" separator="," close=")">
+				#{roleId}
+			</foreach>
+		</if>
 		<if test="roleId != null and roleId != 0">
 			AND r.role_id = #{roleId}
 		</if>

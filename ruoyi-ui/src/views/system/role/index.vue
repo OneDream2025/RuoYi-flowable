@@ -650,7 +650,8 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       this.download('system/role/export', {
-        ...this.queryParams
+        ...this.queryParams,
+        roleIds: this.ids.join(',')
       }, `role_${new Date().getTime()}.xlsx`)
     },
     /** 复制权限操作 */
