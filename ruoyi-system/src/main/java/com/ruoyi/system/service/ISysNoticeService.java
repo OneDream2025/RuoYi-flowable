@@ -57,4 +57,18 @@ public interface ISysNoticeService
      * @return 结果
      */
     public int deleteNoticeByIds(Long[] noticeIds);
+
+    /**
+     * 查询需要发布的公告列表（达到发布时间且状态为关闭的公告）
+     * 
+     * @return 公告集合
+     */
+    public List<SysNotice> selectNoticesToPublish();
+
+    /**
+     * 查询需要过期的公告列表（达到结束时间且状态为正常的公告）
+     * 
+     * @return 公告集合
+     */
+    public List<SysNotice> selectNoticesToExpire();
 }

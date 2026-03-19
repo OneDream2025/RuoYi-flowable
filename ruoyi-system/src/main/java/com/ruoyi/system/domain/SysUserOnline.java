@@ -31,6 +31,15 @@ public class SysUserOnline
     /** 登录时间 */
     private Long loginTime;
 
+    /** 过期时间 */
+    private Long expireTime;
+
+    /** 部门ID */
+    private Long deptId;
+
+    /** 角色ID */
+    private Long roleId;
+
     public String getTokenId()
     {
         return tokenId;
@@ -109,5 +118,35 @@ public class SysUserOnline
     public void setLoginTime(Long loginTime)
     {
         this.loginTime = loginTime;
+    }
+
+    public Long getExpireTime()
+    {
+        return expireTime;
+    }
+
+    public void setExpireTime(Long expireTime)
+    {
+        this.expireTime = expireTime;
+    }
+
+    public Long getDeptId()
+    {
+        return deptId;
+    }
+
+    public void setDeptId(Long deptId)
+    {
+        this.deptId = deptId;
+    }
+
+    public Long getRoleId()
+    {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId)
+    {
+        this.roleId = roleId;
     }
 }

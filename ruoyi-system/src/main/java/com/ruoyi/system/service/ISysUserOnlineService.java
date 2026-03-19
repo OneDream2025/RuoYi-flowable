@@ -45,4 +45,18 @@ public interface ISysUserOnlineService
      * @return 在线用户
      */
     public SysUserOnline loginUserToUserOnline(LoginUser user);
+
+    /**
+     * 多条件匹配在线用户
+     * 
+     * @param online 在线用户信息
+     * @param ipaddr IP地址
+     * @param userName 用户名称
+     * @param deptId 部门ID
+     * @param roleId 角色ID
+     * @param loginTimeBegin 登录时间开始
+     * @param loginTimeEnd 登录时间结束
+     * @return 是否匹配
+     */
+    public boolean matches(SysUserOnline online, String ipaddr, String userName, Long deptId, Long roleId, Long loginTimeBegin, Long loginTimeEnd);
 }

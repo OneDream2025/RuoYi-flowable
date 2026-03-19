@@ -170,4 +170,13 @@ public interface ISysRoleService
      * @return 结果
      */
     public int insertAuthUsers(Long roleId, Long[] userIds);
+
+    /**
+     * 复制角色权限
+     * 
+     * @param fromRoleId 源角色ID
+     * @param toRoleId 目标角色ID
+     * @return 结果
+     */
+    public int copyRolePermission(Long fromRoleId, Long toRoleId);
 }

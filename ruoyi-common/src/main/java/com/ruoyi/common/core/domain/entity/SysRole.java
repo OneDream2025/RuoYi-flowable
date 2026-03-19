@@ -64,6 +64,9 @@ public class SysRole extends BaseEntity
     /** 角色菜单权限 */
     private Set<String> permissions;
 
+    /** 角色组 */
+    private Long[] roleIds;
+
     public SysRole()
     {
 
@@ -219,6 +222,16 @@ public class SysRole extends BaseEntity
         this.permissions = permissions;
     }
 
+    public Long[] getRoleIds()
+    {
+        return roleIds;
+    }
+
+    public void setRoleIds(Long[] roleIds)
+    {
+        this.roleIds = roleIds;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -236,6 +249,7 @@ public class SysRole extends BaseEntity
             .append("updateBy", getUpdateBy())
             .append("updateTime", getUpdateTime())
             .append("remark", getRemark())
+            .append("roleIds", getRoleIds())
             .toString();
     }
 }

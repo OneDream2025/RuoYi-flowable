@@ -19,6 +19,8 @@ import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.system.domain.SysRoleDept;
 import com.ruoyi.system.domain.SysRoleMenu;
 import com.ruoyi.system.domain.SysUserRole;
+import com.ruoyi.system.mapper.SysDeptMapper;
+import com.ruoyi.system.mapper.SysMenuMapper;
 import com.ruoyi.system.mapper.SysRoleDeptMapper;
 import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysRoleMenuMapper;
@@ -44,6 +46,12 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     @Autowired
     private SysRoleDeptMapper roleDeptMapper;
+
+    @Autowired
+    private SysMenuMapper menuMapper;
+
+    @Autowired
+    private SysDeptMapper deptMapper;
 
     /**
      * 根据条件分页查询角色数据
@@ -423,5 +431,59 @@ public class SysRoleServiceImpl implements ISysRoleService
             list.add(ur);
         }
         return userRoleMapper.batchUserRole(list);
+    }
+
+    @Override
+    @Transactional
+    public int copyRolePermission(Long fromRoleId, Long toRoleId)
+    {
+        SysRole fromRole = selectRoleById(fromRoleId);
+        SysRole toRole = selectRoleById(toRoleId);
+        if (StringUtils.isNull(fromRole) || StringUtils.isNull(toRole))
+        {
+            throw new ServiceException("角色不存在");
+        }
+        checkRoleAllowed(toRole);
+        checkRoleDataScope(toRoleId);
+
+        List<Long> menuIdList = menuMapper.selectMenuListByRoleId(fromRoleId, false);
+        List<Long> deptIdList = deptMapper.selectDeptListByRoleId(fromRoleId, false);
+        Long[] menuIds = menuIdList.toArray(new Long[0]);
+        Long[] deptIds = deptIdList.toArray(new Long[0]);
+
+        roleMenuMapper.deleteRoleMenuByRoleId(toRoleId);
+        roleDeptMapper.deleteRoleDeptByRoleId(toRoleId);
+
+        int rows = 1;
+        if (menuIds != null && menuIds.length > 0)
+        {
+            List<SysRoleMenu> roleMenuList = new ArrayList<>();
+            for (Long menuId : menuIds)
+            {
+                SysRoleMenu rm = new SysRoleMenu();
+                rm.setRoleId(toRoleId);
+                rm.setMenuId(menuId);
+                roleMenuList.add(rm);
+            }
+            rows = roleMenuMapper.batchRoleMenu(roleMenuList);
+        }
+
+        if (deptIds != null && deptIds.length > 0)
+        {
+            List<SysRoleDept> roleDeptList = new ArrayList<>();
+            for (Long deptId : deptIds)
+            {
+                SysRoleDept rd = new SysRoleDept();
+                rd.setRoleId(toRoleId);
+                rd.setDeptId(deptId);
+                roleDeptList.add(rd);
+            }
+            roleDeptMapper.batchRoleDept(roleDeptList);
+        }
+
+        toRole.setDataScope(fromRole.getDataScope());
+        roleMapper.updateRole(toRole);
+
+        return rows;
     }
 }

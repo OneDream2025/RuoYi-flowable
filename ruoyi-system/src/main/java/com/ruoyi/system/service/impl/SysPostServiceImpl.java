@@ -3,12 +3,14 @@ package com.ruoyi.system.service.impl;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.SysPost;
 import com.ruoyi.system.mapper.SysPostMapper;
 import com.ruoyi.system.mapper.SysUserPostMapper;
+import com.ruoyi.system.service.ISysPostHistoryService;
 import com.ruoyi.system.service.ISysPostService;
 
 /**
@@ -24,6 +26,9 @@ public class SysPostServiceImpl implements ISysPostService
 
     @Autowired
     private SysUserPostMapper userPostMapper;
+
+    @Autowired
+    private ISysPostHistoryService postHistoryService;
 
     /**
      * 查询岗位信息集合
@@ -127,8 +132,14 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deletePostById(Long postId)
     {
+        SysPost post = postMapper.selectPostById(postId);
+        if (post != null)
+        {
+            postHistoryService.recordPostHistory(post, "3", "删除岗位");
+        }
         return postMapper.deletePostById(postId);
     }
 
@@ -139,6 +150,7 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int deletePostByIds(Long[] postIds)
     {
         for (Long postId : postIds)
@@ -148,6 +160,7 @@ public class SysPostServiceImpl implements ISysPostService
             {
                 throw new ServiceException(String.format("%1$s已分配,不能删除", post.getPostName()));
             }
+            postHistoryService.recordPostHistory(post, "3", "删除岗位");
         }
         return postMapper.deletePostByIds(postIds);
     }
@@ -159,9 +172,15 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int insertPost(SysPost post)
     {
-        return postMapper.insertPost(post);
+        int rows = postMapper.insertPost(post);
+        if (rows > 0)
+        {
+            postHistoryService.recordPostHistory(post, "1", "新增岗位");
+        }
+        return rows;
     }
 
     /**
@@ -171,8 +190,14 @@ public class SysPostServiceImpl implements ISysPostService
      * @return 结果
      */
     @Override
+    @Transactional
     public int updatePost(SysPost post)
     {
-        return postMapper.updatePost(post);
+        int rows = postMapper.updatePost(post);
+        if (rows > 0)
+        {
+            postHistoryService.recordPostHistory(post, "2", "修改岗位");
+        }
+        return rows;
     }
 }

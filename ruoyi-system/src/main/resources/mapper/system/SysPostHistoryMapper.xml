@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysPostHistoryMapper">
+
+	<resultMap type="SysPostHistory" id="SysPostHistoryResult">
+		<id     property="historyId"       column="history_id"     />
+		<result property="postId"          column="post_id"        />
+		<result property="postCode"        column="post_code"      />
+		<result property="postName"        column="post_name"      />
+		<result property="postSort"        column="post_sort"      />
+		<result property="status"          column="status"         />
+		<result property="version"         column="version"        />
+		<result property="operationType"   column="operation_type" />
+		<result property="changeReason"    column="change_reason"  />
+		<result property="createBy"        column="create_by"      />
+		<result property="createTime"      column="create_time"    />
+		<result property="remark"          column="remark"         />
+	</resultMap>
+	
+	<sql id="selectPostHistoryVo">
+        select history_id, post_id, post_code, post_name, post_sort, status, version, operation_type, change_reason, create_by, create_time, remark 
+		from sys_post_history
+    </sql>
+	
+	<select id="selectPostHistoryList" parameterType="SysPostHistory" resultMap="SysPostHistoryResult">
+	    <include refid="selectPostHistoryVo"/>
+		<where>
+			<if test="postId != null">
+				AND post_id = #{postId}
+			</if>
+			<if test="postCode != null and postCode != ''">
+				AND post_code like concat('%', #{postCode}, '%')
+			</if>
+			<if test="postName != null and postName != ''">
+				AND post_name like concat('%', #{postName}, '%')
+			</if>
+			<if test="operationType != null and operationType != ''">
+				AND operation_type = #{operationType}
+			</if>
+		</where>
+		order by create_time desc
+	</select>
+	
+	<select id="selectPostHistoryByPostId" parameterType="Long" resultMap="SysPostHistoryResult">
+		<include refid="selectPostHistoryVo"/>
+		where post_id = #{postId}
+		order by version desc
+	</select>
+	
+	<select id="selectPostHistoryById" parameterType="Long" resultMap="SysPostHistoryResult">
+		<include refid="selectPostHistoryVo"/>
+		where history_id = #{historyId}
+	</select>
+	
+	<select id="selectMaxVersionByPostId" parameterType="Long" resultType="Integer">
+		select max(version) from sys_post_history where post_id = #{postId}
+	</select>
+	
+ 	<insert id="insertPostHistory" parameterType="SysPostHistory" useGeneratedKeys="true" keyProperty="historyId">
+ 		insert into sys_post_history(
+ 			post_id, post_code, post_name, post_sort, status, version, operation_type, change_reason, create_by, create_time, remark
+ 		)values(
+ 			#{postId}, #{postCode}, #{postName}, #{postSort}, #{status}, #{version}, #{operationType}, #{changeReason}, #{createBy}, sysdate(), #{remark}
+ 		)
+	</insert>
+
+</mapper>

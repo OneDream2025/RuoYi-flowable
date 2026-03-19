@@ -42,3 +42,44 @@ export function delPost(postId) {
     method: 'delete'
   })
 }
+
+// 查询岗位历史列表
+export function listPostHistory(query) {
+  return request({
+    url: '/system/post/history/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询岗位历史详细
+export function getPostHistory(historyId) {
+  return request({
+    url: '/system/post/history/' + historyId,
+    method: 'get'
+  })
+}
+
+// 根据岗位ID查询历史列表
+export function getPostHistoryByPostId(postId) {
+  return request({
+    url: '/system/post/history/post/' + postId,
+    method: 'get'
+  })
+}
+
+// 对比岗位版本
+export function comparePostVersions(historyId1, historyId2) {
+  return request({
+    url: '/system/post/history/compare/' + historyId1 + '/' + historyId2,
+    method: 'get'
+  })
+}
+
+// 岗位回滚
+export function rollbackPost(historyId) {
+  return request({
+    url: '/system/post/history/rollback/' + historyId,
+    method: 'post'
+  })
+}
